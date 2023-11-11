@@ -1,11 +1,13 @@
 import cv2
 import numpy as np
+from pathlib import Path
 
 
 def save_image(image: np.ndarray, save_path: str) -> None:
+    save_path = Path(save_path)
     if not save_path.parent.exists():
         save_path.parent.mkdir(parents=True)
-    cv2.imwrite(save_path, image)
+    cv2.imwrite(str(save_path), image)
 
 
 def remove_padding(image, lower_binary_threshold: int = 10, upper_binary_threshold: int = 255) -> np.ndarray:

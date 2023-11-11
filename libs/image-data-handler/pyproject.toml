@@ -13,3 +13,4 @@ authors = ["Balazs Horvath <horvathbolii@gmail.com>"]
 python = ">=3.10"
 numpy = "^1.22"
 opencv_python = "^4.8.0.76"
+pandas = "^1.4.0"
