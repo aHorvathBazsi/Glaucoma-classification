@@ -1,27 +1,36 @@
 import os
+
 import cv2
 import pandas as pd
+from glaucomaclassifier.constants import (ALL_IMAGE_DIR, ALL_LABEL_CSV,
+                                          IMAGE_COLUMN_IDX,
+                                          IMAGE_FILE_EXTENSION,
+                                          SAMPLE_PER_CLASS_DICT,
+                                          SAMPLED_IMAGE_DIR, SAMPLED_LABEL_CSV)
 from imagedatahandler.data_sampling import sample_data_custom_ratio_per_class
 from imagedatahandler.image_operations import remove_padding, save_image
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 def prepare_image_data():
-    label_df = pd.read_csv("train_labels.csv")
-    image_dir = os.path.join(os.getcwd(), "image-data")
-    sample_per_class_dict = {"NRG": 5000, "RG": 2500}
+    label_df = pd.read_csv(ALL_LABEL_CSV)
+    image_dir = os.path.join(THIS_DIR, ALL_IMAGE_DIR)
 
     sampled_dataframe = sample_data_custom_ratio_per_class(
-        dataframe=label_df,
-        sample_per_class_dict=sample_per_class_dict
+        dataframe=label_df, sample_per_class_dict=SAMPLE_PER_CLASS_DICT
     )
-    sampled_dataframe.to_csv("sampled_train_labels.csv", index=False)
+    sampled_dataframe.to_csv(SAMPLED_LABEL_CSV, index=False)
 
-    for image_id in sampled_dataframe["challenge_id"].tolist():
-        image_filename = f"{image_id}.jpg"
+    for image_id in sampled_dataframe.iloc[:, IMAGE_COLUMN_IDX].tolist():
+        image_filename = f"{image_id}{IMAGE_FILE_EXTENSION}"
         image_path = os.path.join(image_dir, image_filename)
         cropped_images = remove_padding(cv2.imread(image_path))
         save_image(
             image=cropped_images,
-            save_path=os.path.join(os.getcwd(), "sampled-image-data", image_filename)
+            save_path=os.path.join(THIS_DIR, SAMPLED_IMAGE_DIR, image_filename),
         )
+
+
 if __name__ == "__main__":
     prepare_image_data()
