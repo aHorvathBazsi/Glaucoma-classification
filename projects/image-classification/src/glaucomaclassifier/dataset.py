@@ -70,7 +70,6 @@ class CustomImageDataset(Dataset):
             label = self.label_transform(label)
         return image, label
 
-
 if __name__ == "__main__":
 
     label_dataframe = pd.read_csv("sampled_train_labels.csv")

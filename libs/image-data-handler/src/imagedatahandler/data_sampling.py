@@ -27,3 +27,10 @@ def sample_data_custom_ratio_per_class(
             objs=[class_dataframe.sample(sample_size), sampled_dataframe]
         )
     return sampled_dataframe
+
+def split_label_dataframe(label_dataframe: pd.DataFrame, fraction: float = 0.8, random_state: int = 42):
+    train_data = pd.concat(
+        [grouped_dataframe.sample(frac=fraction, random_state=random_state) for _, grouped_dataframe in label_dataframe.groupby(LABEL_COLUMN_NAME)]
+    )
+    val_data = label_dataframe.drop(train_data.index)
+    return train_data, val_data
