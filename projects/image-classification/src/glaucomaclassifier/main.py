@@ -4,6 +4,7 @@ import pandas as pd
 import torch
 from torch import optim
 from torch import nn
+from timm.loss import LabelSmoothingCrossEntropy
 
 from constants import SAMPLED_IMAGE_DIR, SAMPLED_LABEL_CSV
 from glaucomaclassifier.dataloader import get_data_loader
@@ -11,6 +12,7 @@ from glaucomaclassifier.dataset import CustomImageDataset
 from glaucomaclassifier.transforms import (get_image_transform,
                                            get_label_transform)
 from glaucomaclassifier.models import get_model
+from glaucomaclassifier.train import train_model
 from imagedatahandler.data_sampling import split_label_dataframe
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -45,15 +47,25 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = get_model(model_name="deit", num_classes=2, pretrained=True)
-    model = model.to(device)
+    model = get_model(model_name="deit", num_classes=2, pretrained=False)
+    model.to(device)
 
-    criterion = nn.CrossEntropyLoss()
-    criterion = criterion.to(device)
+    criterion = LabelSmoothingCrossEntropy()
+    criterion.to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=0.001)
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.97)
 
+    train_model(
+        model=model,
+        criterion=criterion,
+        optimizer=optimizer,
+        scheduler=exp_lr_scheduler,
+        dataloaders={"train": train_data_loader, "val": val_data_loader},
+        dataset_sizes={"train": len(train_dataset), "val": len(val_dataset)},
+        device=device,
+        num_epochs=10,
+    )
 
 if __name__ == "__main__":
     main()
