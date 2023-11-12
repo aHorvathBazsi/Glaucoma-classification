@@ -2,7 +2,8 @@ import glob
 import os
 
 import pandas as pd
-from constants import IMAGE_COLUMN_IDX, IMAGE_FILE_EXTENSION, LABEL_COLUMN_IDX
+from constants import (CLASS_NAME_ID_MAP, IMAGE_COLUMN_IDX,
+                       IMAGE_FILE_EXTENSION, LABEL_COLUMN_IDX)
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
@@ -22,9 +23,10 @@ class CustomImageDataset(Dataset):
         self.image_file_extension = image_file_extension
         self.image_transform = image_transform
         self.label_transform = label_transform
-        self.__validate_data()
+        self.__validate_image_data()
+        self.__validate_label_data()
 
-    def __validate_data(self):
+    def __validate_image_data(self):
         image_filenames_from_dataframe = self.label_dataframe.iloc[
             :, IMAGE_COLUMN_IDX
         ].tolist()
@@ -42,6 +44,13 @@ class CustomImageDataset(Dataset):
         ):
             raise ValueError(
                 "Image filenames in dataframe is not a subset of image filenames in image directory"
+            )
+
+    def __validate_label_data(self):
+        label_data = self.label_dataframe.iloc[:, LABEL_COLUMN_IDX].tolist()
+        if not set(label_data).issubset(set(CLASS_NAME_ID_MAP.keys())):
+            raise ValueError(
+                "Label data is not a subset of class names"
             )
 
     def __len__(self):
