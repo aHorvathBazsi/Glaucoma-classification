@@ -7,7 +7,13 @@ class VisionModelName(str, Enum):
     DEIT = "timm/deit_tiny_patch16_224.fb_in1k"
 
 
-def get_model(model_name: str, num_classes: int = 2, pretrained: bool = True, unfreeze_head: bool = False, unfreeze_blocks_number: int = 0):
+def get_model(
+        model_name: str,
+        num_classes: int = 2,
+        pretrained: bool = True,
+        unfreeze_head: bool = False,
+        unfreeze_blocks_number: int = 0
+):
     model_enum = VisionModelName[model_name.upper()]
     model = timm.create_model(model_enum.value, pretrained=pretrained, num_classes=num_classes)
 
