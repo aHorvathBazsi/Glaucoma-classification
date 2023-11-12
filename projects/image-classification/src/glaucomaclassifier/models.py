@@ -4,7 +4,7 @@ import timm
 
 class VisionModelName(str, Enum):
     SWIN_TRANSFORMER = "timm/swin_small_patch4_window7_224.ms_in22k_ft_in1k"
-    DEIT = "timm/deit_small_patch16_224.fb_in1k"
+    DEIT = "timm/deit_tiny_patch16_224.fb_in1k"
 
 
 def get_model(model_name: str, num_classes: int = 2, pretrained: bool = True):

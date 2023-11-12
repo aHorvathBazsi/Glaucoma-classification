@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 from constants import (CLASS_NAME_ID_MAP, IMAGE_COLUMN_IDX,
-                       IMAGE_FILE_EXTENSION, LABEL_COLUMN_IDX)
+                       IMAGE_FILE_EXTENSION, LABEL_COLUMN_IDX, LABEL_COLUMN_NAME)
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
@@ -25,6 +25,7 @@ class CustomImageDataset(Dataset):
         self.label_transform = label_transform
         self.__validate_image_data()
         self.__validate_label_data()
+        self.__get_class_weights()
 
     def __validate_image_data(self):
         image_filenames_from_dataframe = self.label_dataframe.iloc[
@@ -69,6 +70,13 @@ class CustomImageDataset(Dataset):
         if self.label_transform:
             label = self.label_transform(label)
         return image, label
+
+    def __get_class_weights(self):
+        self.label_dataframe["encoded_label"] = self.label_dataframe[LABEL_COLUMN_NAME].map(lambda x: CLASS_NAME_ID_MAP[x])
+        class_weights = [1.0 / count for count in self.label_dataframe["encoded_label"].value_counts().sort_index()]
+        sum_of_weights = sum(class_weights)
+        self.normalized_weights = [weight / sum_of_weights for weight in class_weights]
+
 
 if __name__ == "__main__":
 
