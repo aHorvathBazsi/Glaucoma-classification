@@ -1,6 +1,6 @@
 import numpy as np
-import cv2
-from imagedatahandler.padding_removal import remove_padding
+from imagedatahandler.image_operations import remove_padding
+
 
 def test_remove_padding():
     # Test case 1: Image with padding on all sides

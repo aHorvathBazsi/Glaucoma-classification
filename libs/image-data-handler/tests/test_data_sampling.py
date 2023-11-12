@@ -1,6 +1,7 @@
 import pandas as pd
 from imagedatahandler.data_sampling import sample_data_custom_ratio_per_class
 
+
 def test_sample_data_custom_ratio_per_class():
     # Test case 1: Sample 2 images per class
     df = pd.DataFrame({
