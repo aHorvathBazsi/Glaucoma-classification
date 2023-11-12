@@ -1,6 +1,8 @@
 from enum import Enum
 
 import timm
+from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
+
 
 class VisionModelName(str, Enum):
     SWIN_TRANSFORMER = "timm/swin_small_patch4_window7_224.ms_in22k_ft_in1k"
@@ -14,6 +16,8 @@ def get_model(
         unfreeze_head: bool = False,
         unfreeze_blocks_number: int = 0
 ):
+    if num_classes != len(CLASS_NAME_ID_MAP):
+        raise ValueError(f"Number of classes doesn't match settings with constant which is: {len(CLASS_NAME_ID_MAP)}")
     model_enum = VisionModelName[model_name.upper()]
     model = timm.create_model(model_enum.value, pretrained=pretrained, num_classes=num_classes)
 

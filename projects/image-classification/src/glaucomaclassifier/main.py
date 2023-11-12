@@ -1,6 +1,7 @@
 import torch
 from glaucomaclassifier.dataloader import get_data_loaders
 from glaucomaclassifier.models import get_model
+from glaucomaclassifier.optimizer import get_optimizer
 from glaucomaclassifier.train import train_model
 from torch import nn, optim
 
@@ -12,7 +13,7 @@ def run_training(
     num_epochs=10,
     use_weighted_sampler=True,
     unfreeze_head=True,
-    unfreeze_blocks_number=0
+    unfreeze_blocks_number=1
 ):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -23,7 +24,7 @@ def run_training(
         batch_size=batch_size,
         use_weighted_sampler=use_weighted_sampler
     )
-    
+
     if not use_weighted_sampler:
         class_weigths = torch.FloatTensor(class_weigths).to(device)
         criterion = nn.CrossEntropyLoss(weight=class_weigths)
@@ -40,7 +41,12 @@ def run_training(
     )
     model.to(device)
 
-    optimizer = optim.Adam(trainable_parameters, lr=0.001)
+    optimizer = get_optimizer(
+        optimizer_type="AdamW",
+        parameters=trainable_parameters,
+        base_learning_rate=0.001,
+        weight_decay=0.01
+    )
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.97)
 
     train_model(
