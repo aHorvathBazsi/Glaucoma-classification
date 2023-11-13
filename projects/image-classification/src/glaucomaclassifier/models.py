@@ -41,7 +41,7 @@ def get_model(
 
         # Unfreeze and collect block parameters if requested
         if unfreeze_blocks_number > 0:
-            last_bloccks = model.blocks[-unfreeze_blocks_number:] if model_enum.value == "deit" else model.layers[-unfreeze_blocks_number:]
+            last_bloccks = model.blocks[-unfreeze_blocks_number:] if model_name == "deit" else model.layers[-unfreeze_blocks_number:]
             block_params = []
             for block in last_bloccks:
                 for param in block.parameters():
@@ -55,7 +55,7 @@ def get_model(
 
 if __name__ == "__main__":
     model = get_model(
-        model_name="swin_transformer",
+        model_name="deit",
         num_classes=2,
         pretrained=True,
         unfreeze_head=True,
