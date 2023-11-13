@@ -51,7 +51,7 @@ def run_training(config: TrainingRunConfig):
         optimizer, step_size=config.step_size, gamma=config.gamma
     )
 
-    train_model(
+    model = train_model(
         training_run_config=config,
         model=model,
         criterion=criterion,
@@ -63,6 +63,8 @@ def run_training(config: TrainingRunConfig):
         num_epochs=config.num_epochs,
         wandb_track_enabled=True,
     )
+    torch.cuda.empty_cache()
+    return model
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ class TrainingRunConfig:
     batch_size: int = 32
     train_val_ratio: float = 0.8
     max_rotation_angle: int = 20
-    num_epochs: int = 10
+    num_epochs: int = 5
     use_weighted_sampler: bool = True
     unfreeze_head: bool = True
     unfreeze_blocks_number: int = 1

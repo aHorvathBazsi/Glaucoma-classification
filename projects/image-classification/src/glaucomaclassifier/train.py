@@ -95,7 +95,6 @@ def train_model(
         )
         artifact.add_file(model_state_dict_path)
         wandb.log_artifact(artifact)
-        wandb.finish()
 
     time_elapsed = time.time() - since
     print(
@@ -104,3 +103,4 @@ def train_model(
         )
     )
     print("Best Val Loss: {:.4f}".format(best_loss))
+    return model

@@ -161,7 +161,6 @@ def evaluate_model(model_state_dict_path, model, val_data_loader, device, wandb_
                 "sensitivity_at_95_specificity": sensitivity_at_high_specificity
             }
         )
-        wandb.finish()
 
 def main():
     model, _ = get_model(model_name="deit", num_classes=2, pretrained=True)
