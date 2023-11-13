@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import os
 import torch
 import torch.nn.functional as F
 from sklearn.metrics import (
@@ -12,11 +13,14 @@ from sklearn.metrics import (
     recall_score,
     roc_curve,
 )
+import wandb
 from tqdm import tqdm
 
 from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
 from glaucomaclassifier.dataloader import get_data_loaders
 from glaucomaclassifier.models import get_model
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_predictions(val_loader, model, device):
@@ -42,7 +46,7 @@ def get_predictions(val_loader, model, device):
     return original_labels, predicted_labels, glaucoma_probs
 
 
-def plot_confusion_matrix(original_labels, predicted_labels, class_names):
+def plot_confusion_matrix(original_labels, predicted_labels, class_names, save_path):
     cm = confusion_matrix(original_labels, predicted_labels)
     plt.figure(figsize=(8, 6))
     sns.heatmap(
@@ -60,7 +64,7 @@ def plot_confusion_matrix(original_labels, predicted_labels, class_names):
     plt.close()
 
 
-def plot_precision_recall_curve(original_labels, glaucoma_probs):
+def plot_precision_recall_curve(original_labels, glaucoma_probs, save_path):
     precision, recall, _ = precision_recall_curve(original_labels, glaucoma_probs)
     plt.figure(figsize=(8, 6))
     plt.plot(
@@ -70,7 +74,7 @@ def plot_precision_recall_curve(original_labels, glaucoma_probs):
     plt.ylabel("Precision")
     plt.title("Precision-Recall Curve")
     plt.legend(loc="lower left")
-    plt.savefig("precision_recall_curve.png")
+    plt.savefig(save_path)
     plt.close()
 
 
@@ -78,12 +82,11 @@ def compute_additional_metrics(original_labels, predicted_labels):
     precision = precision_score(original_labels, predicted_labels)
     recall = recall_score(original_labels, predicted_labels)
     f1 = f1_score(original_labels, predicted_labels)
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall: {recall:.2f}")
-    print(f"F1 Score: {f1:.2f}")
+
+    return precision, recall, f1
 
 
-def get_roc_curve(original_labels, glaucoma_probs):
+def get_roc_curve(original_labels, glaucoma_probs, roc_curve_save_path):
     fpr, tpr, thresholds = roc_curve(original_labels, glaucoma_probs)
     roc_auc = auc(fpr, tpr)
     print(f"ROC AUC: {roc_auc:.2f}")
@@ -99,8 +102,9 @@ def get_roc_curve(original_labels, glaucoma_probs):
     plt.ylabel("True Positive Rate")
     plt.title("Receiver Operating Characteristic")
     plt.legend(loc="lower right")
-    plt.savefig("roc_curve.png")
+    plt.savefig(roc_curve_save_path)
     plt.close()
+    return fpr, tpr, thresholds
 
 
 def sensitivity_at_certain_specificity(target_specificity, fpr, tpr):
@@ -111,22 +115,14 @@ def sensitivity_at_certain_specificity(target_specificity, fpr, tpr):
     print(
         f"Sensitivity at {target_specificity*100:.0f}% Specificity: {sensitivity_at_specificity:.2f}"
     )
+    return sensitivity_at_specificity
 
 
-def main():
+def evaluate_model(model_state_dict_path, model, val_data_loader, device, wandb_track_enabled, run_name):
     # Load the model
-    model, _ = get_model(model_name="deit", num_classes=2, pretrained=True)
-    model.load_state_dict(torch.load("best_model.pth"))
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.load_state_dict(torch.load(model_state_dict_path))
     model.to(device)
     model.eval()
-
-    _, val_data_loader, _, _, _ = get_data_loaders(
-        train_val_ratio=0.8,
-        max_rotation_angle=20,
-        batch_size=32,
-        use_weighted_sampler=False,
-    )
 
     # Get predictions
     original_labels, predicted_labels, glaucoma_probs = get_predictions(
@@ -134,19 +130,56 @@ def main():
     )
 
     # Plot and compute metrics
+    confusion_matrix_save_path = os.path.join(THIS_DIR, "confusion_matrix.png")
     plot_confusion_matrix(
-        original_labels, predicted_labels, list(CLASS_NAME_ID_MAP.keys())
+        original_labels,
+        predicted_labels,
+        list(CLASS_NAME_ID_MAP.keys()),
+        save_path=confusion_matrix_save_path
     )
-    plot_precision_recall_curve(original_labels, glaucoma_probs)
-    compute_additional_metrics(original_labels, predicted_labels)
-    get_roc_curve(original_labels, glaucoma_probs)
+    pr_curve_save_path = os.path.join(THIS_DIR, "precision_recall_curve.png")
+    plot_precision_recall_curve(original_labels, glaucoma_probs, pr_curve_save_path)
 
-    # Calculate sensitivity at a certain specificity
-    fpr, tpr, thresholds = roc_curve(original_labels, glaucoma_probs)
-    sensitivity_at_certain_specificity(
+    precision, recall, f1 = compute_additional_metrics(original_labels, predicted_labels)
+
+    roc_curve_save_path = os.path.join(THIS_DIR, "roc_curve.png")
+    fpr, tpr, thresholds = get_roc_curve(original_labels, glaucoma_probs, roc_curve_save_path)
+
+    sensitivity_at_high_specificity = sensitivity_at_certain_specificity(
         0.95, fpr, tpr
     )  # Change 0.95 to your target specificity
+    if wandb_track_enabled:
+        wandb.init(project="glaucoma-classification", name=run_name)
+        wandb.log(
+            {
+                "confusion_matrix": wandb.Image(confusion_matrix_save_path),
+                "precision_recall_curve": wandb.Image(pr_curve_save_path),
+                "roc_curve": wandb.Image(roc_curve_save_path),
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1,
+                "sensitivity_at_95_specificity": sensitivity_at_high_specificity
+            }
+        )
+        wandb.finish()
 
+def main():
+    model, _ = get_model(model_name="deit", num_classes=2, pretrained=True)
+    _, val_data_loader, _, _, _ = get_data_loaders(
+        train_val_ratio=0.8,
+        max_rotation_angle=20,
+        batch_size=32,
+        use_weighted_sampler=False,
+    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    evaluate_model(
+        model_state_dict_path="tiny-deit-unfrozen-block-1.pth",
+        model=model,
+        val_data_loader=val_data_loader,
+        device=device,
+        wandb_track_enabled=True,
+        run_name="deit-test-no-tuning")
 
 if __name__ == "__main__":
     main()
