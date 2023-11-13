@@ -55,4 +55,8 @@ if __name__ == "__main__":
     with open('sweep_config.yaml', 'r') as file:
         sweep_configuration = yaml.safe_load(file)
     sweep_id = wandb.sweep(sweep=sweep_configuration, project="glaucoma-classification")
-    wandb.agent(sweep_id, wandb_run_experiment, count=5)
+    wandb.agent(
+        sweep_id=sweep_id,
+        function=wandb_run_experiment,
+        count=5
+    )

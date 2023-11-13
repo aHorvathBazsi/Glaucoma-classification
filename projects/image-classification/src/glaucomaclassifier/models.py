@@ -6,7 +6,7 @@ from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
 
 
 class VisionModelName(str, Enum):
-    SWIN_TRANSFORMER = "timm/swin_small_patch4_window7_224.ms_in22k_ft_in1k"
+    SWIN_TRANSFORMER = "timm/swin_tiny_patch4_window7_224.ms_in1k"
     DEIT = "timm/deit_tiny_patch16_224.fb_in1k"
 
 
@@ -41,8 +41,9 @@ def get_model(
 
         # Unfreeze and collect block parameters if requested
         if unfreeze_blocks_number > 0:
+            last_bloccks = model.blocks[-unfreeze_blocks_number:] if model_enum.value == "deit" else model.layers[-unfreeze_blocks_number:]
             block_params = []
-            for block in model.blocks[-unfreeze_blocks_number:]:
+            for block in last_bloccks:
                 for param in block.parameters():
                     param.requires_grad = True
                     block_params.append(param)
@@ -51,3 +52,13 @@ def get_model(
         trainable_parameters = model.parameters()
 
     return model, trainable_parameters
+
+if __name__ == "__main__":
+    model = get_model(
+        model_name="swin_transformer",
+        num_classes=2,
+        pretrained=True,
+        unfreeze_head=True,
+        unfreeze_blocks_number=1,
+    )
+    print("HEY")

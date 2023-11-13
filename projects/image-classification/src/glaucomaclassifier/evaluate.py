@@ -1,24 +1,21 @@
+import matplotlib
 import matplotlib.pyplot as plt
+
+matplotlib.use('Agg')
+import os
+
 import numpy as np
 import seaborn as sns
-import os
 import torch
 import torch.nn.functional as F
-from sklearn.metrics import (
-    auc,
-    confusion_matrix,
-    f1_score,
-    precision_recall_curve,
-    precision_score,
-    recall_score,
-    roc_curve,
-)
 import wandb
-from tqdm import tqdm
-
 from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
 from glaucomaclassifier.dataloader import get_data_loaders
 from glaucomaclassifier.models import get_model
+from sklearn.metrics import (auc, confusion_matrix, f1_score,
+                             precision_recall_curve, precision_score,
+                             recall_score, roc_curve)
+from tqdm import tqdm
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
