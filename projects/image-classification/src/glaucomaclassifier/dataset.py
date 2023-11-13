@@ -2,8 +2,13 @@ import glob
 import os
 
 import pandas as pd
-from constants import (CLASS_NAME_ID_MAP, IMAGE_COLUMN_IDX,
-                       IMAGE_FILE_EXTENSION, LABEL_COLUMN_IDX, LABEL_COLUMN_NAME)
+from constants import (
+    CLASS_NAME_ID_MAP,
+    IMAGE_COLUMN_IDX,
+    IMAGE_FILE_EXTENSION,
+    LABEL_COLUMN_IDX,
+    LABEL_COLUMN_NAME,
+)
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
@@ -50,9 +55,7 @@ class CustomImageDataset(Dataset):
     def __validate_label_data(self):
         label_data = self.label_dataframe.iloc[:, LABEL_COLUMN_IDX].tolist()
         if not set(label_data).issubset(set(CLASS_NAME_ID_MAP.keys())):
-            raise ValueError(
-                "Label data is not a subset of class names"
-            )
+            raise ValueError("Label data is not a subset of class names")
 
     def __len__(self):
         return len(self.label_dataframe)
@@ -72,8 +75,15 @@ class CustomImageDataset(Dataset):
         return image, label
 
     def __get_class_weights(self):
-        self.label_dataframe["encoded_label"] = self.label_dataframe[LABEL_COLUMN_NAME].map(lambda x: CLASS_NAME_ID_MAP[x])
-        class_weights = [1.0 / count for count in self.label_dataframe["encoded_label"].value_counts().sort_index()]
+        self.label_dataframe["encoded_label"] = self.label_dataframe[
+            LABEL_COLUMN_NAME
+        ].map(lambda x: CLASS_NAME_ID_MAP[x])
+        class_weights = [
+            1.0 / count
+            for count in self.label_dataframe["encoded_label"]
+            .value_counts()
+            .sort_index()
+        ]
         sum_of_weights = sum(class_weights)
         self.normalized_weights = [weight / sum_of_weights for weight in class_weights]
 

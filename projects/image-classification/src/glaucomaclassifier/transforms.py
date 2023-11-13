@@ -1,12 +1,17 @@
-from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
-from torchvision import transforms
 from typing import Tuple
+
+from torchvision import transforms
+
+from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
 
 
 def get_label_transform():
     return transforms.Lambda(lambda label: CLASS_NAME_ID_MAP[label])
 
-def get_image_transform(input_size: Tuple[int, int], max_rotation_angle: int, is_train: bool = True):
+
+def get_image_transform(
+    input_size: Tuple[int, int], max_rotation_angle: int, is_train: bool = True
+):
     image_transform = [
         transforms.Resize(input_size),
         transforms.ToTensor(),
@@ -18,6 +23,7 @@ def get_image_transform(input_size: Tuple[int, int], max_rotation_angle: int, is
         image_transform.insert(2, transforms.RandomRotation(max_rotation_angle))
 
     return transforms.Compose(image_transform)
+
 
 if __name__ == "__main__":
     image_transform = get_image_transform(is_train=True)
