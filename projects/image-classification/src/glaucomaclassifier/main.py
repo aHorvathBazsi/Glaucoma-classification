@@ -1,10 +1,11 @@
 import torch
+from torch import nn, optim
+
 from glaucomaclassifier.dataloader import get_data_loaders
 from glaucomaclassifier.models import get_model
 from glaucomaclassifier.optimizer import get_optimizer
 from glaucomaclassifier.train import train_model
 from glaucomaclassifier.training_run_config import TrainingRunConfig
-from torch import nn, optim
 
 
 def run_training(config: TrainingRunConfig):
@@ -51,7 +52,7 @@ def run_training(config: TrainingRunConfig):
     )
 
     train_model(
-        run_name=config.run_name,
+        training_run_config=config,
         model=model,
         criterion=criterion,
         optimizer=optimizer,
@@ -60,6 +61,7 @@ def run_training(config: TrainingRunConfig):
         dataset_sizes={"train": train_dataset_size, "val": val_dataset_size},
         device=device,
         num_epochs=config.num_epochs,
+        wandb_track_enabled=True,
     )
 
 
@@ -70,7 +72,7 @@ if __name__ == "__main__":
         batch_size=32,
         train_val_ratio=0.8,
         max_rotation_angle=20,
-        num_epochs=10,
+        num_epochs=2,
         use_weighted_sampler=True,
         unfreeze_head=True,
         unfreeze_blocks_number=1,

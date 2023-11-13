@@ -129,5 +129,11 @@ dmypy.json
 .pyre/
 
 *.jpg
+*.png
 *.lock
 *.pth
+
+# wandb related
+*.json
+*.wandb
+*config.yaml

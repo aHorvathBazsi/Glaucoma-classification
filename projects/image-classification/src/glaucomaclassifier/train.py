@@ -1,12 +1,18 @@
+import os
 import time
 
 import numpy as np
 import torch
+import wandb
 from tqdm import tqdm
+
+from glaucomaclassifier.training_run_config import TrainingRunConfig
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def train_model(
-    run_name,
+    training_run_config: TrainingRunConfig,
     model,
     criterion,
     optimizer,
@@ -14,8 +20,15 @@ def train_model(
     dataloaders,
     dataset_sizes,
     device,
+    wandb_track_enabled=False,
     num_epochs=10,
 ):
+    if wandb_track_enabled:
+        wandb.init(
+            project="glaucoma-classification",
+            name=training_run_config.run_name,
+            config=training_run_config.__dict__,
+        )
     since = time.time()
     best_loss = np.inf
 
@@ -66,10 +79,23 @@ def train_model(
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
             print("{} Loss: {:.4f} Acc: {:.4f}".format(phase, epoch_loss, epoch_acc))
+            if wandb_track_enabled:
+                wandb.log({f"{phase}_loss": epoch_loss, f"{phase}_acc": epoch_acc})
 
             if phase == "val" and epoch_loss < best_loss:
                 best_loss = epoch_loss
-                torch.save(model.state_dict(), f"{run_name}.pth")
+                model_state_dict_path = os.path.join(
+                    THIS_DIR, f"{training_run_config.run_name}.pth"
+                )
+                torch.save(model.state_dict(), model_state_dict_path)
+
+    if wandb_track_enabled:
+        artifact = wandb.Artifact(
+            f"glaucoma-classifier-{training_run_config.run_name}", type="model"
+        )
+        artifact.add_file(model_state_dict_path)
+        wandb.log_artifact(artifact)
+        wandb.finish()
 
     time_elapsed = time.time() - since
     print(
