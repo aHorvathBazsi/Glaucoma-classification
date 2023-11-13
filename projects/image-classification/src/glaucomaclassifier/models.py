@@ -40,10 +40,9 @@ def get_model(
         trainable_parameters.append({"params": head_params})
 
         # Unfreeze and collect block parameters if requested
-        if unfreeze_blocks_number > 0:
-            last_bloccks = model.blocks[-unfreeze_blocks_number:] if model_name == "deit" else model.layers[-unfreeze_blocks_number:]
+        if unfreeze_blocks_number > 0 and model_name == "deit":
             block_params = []
-            for block in last_bloccks:
+            for block in model.blocks[-unfreeze_blocks_number:]:
                 for param in block.parameters():
                     param.requires_grad = True
                     block_params.append(param)
@@ -55,10 +54,10 @@ def get_model(
 
 if __name__ == "__main__":
     model = get_model(
-        model_name="deit",
+        model_name="swin_transformer",
         num_classes=2,
         pretrained=True,
         unfreeze_head=True,
-        unfreeze_blocks_number=1,
+        unfreeze_blocks_number=0,
     )
     print("HEY")
