@@ -1,0 +1,20 @@
+program: hyperparameter_search.py
+method: bayes
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+  batch_size:
+    values: [8, 16, 32]
+  model_name:
+    values: ["deit","swin_transformer"]
+  base_learning_rate:
+    min: 0.0008
+    max: 0.006
+  unfreeze_blocks_number:
+    values: [0, 1, 2]
+  gamma:
+    min: 0.8
+    max: 0.97
+  optimizer_type:
+    values: ["Adam", "AdamW"]
