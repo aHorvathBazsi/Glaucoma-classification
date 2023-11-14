@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as F
 import wandb
 from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
-from glaucomaclassifier.dataloader import get_data_loaders
+from glaucomaclassifier.dataloader import get_test_data_loader
 from glaucomaclassifier.models import get_model
 from sklearn.metrics import (
     auc,
@@ -27,14 +27,14 @@ from tqdm import tqdm
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_predictions(val_loader, model, device):
+def get_predictions(data_loader, model, device):
     # Collect all labels and model outputs
     original_labels = []
     predicted_labels = []
     glaucoma_probs = []
 
     with torch.no_grad():
-        for inputs, labels in tqdm(iterable=val_loader, total=len(val_loader)):
+        for inputs, labels in tqdm(iterable=data_loader, total=len(data_loader)):
             inputs = inputs.to(device)
             labels = labels.to(device)
             outputs = model(inputs)
@@ -123,7 +123,7 @@ def sensitivity_at_certain_specificity(target_specificity, fpr, tpr):
 
 
 def evaluate_model(
-    model_state_dict_path, model, val_data_loader, device, wandb_track_enabled, run_name
+    model_state_dict_path, model, data_loader, device, wandb_track_enabled, run_name
 ):
     # Load the model
     model.load_state_dict(torch.load(model_state_dict_path))
@@ -132,7 +132,7 @@ def evaluate_model(
 
     # Get predictions
     original_labels, predicted_labels, glaucoma_probs = get_predictions(
-        val_data_loader, model, device
+        data_loader, model, device
     )
 
     # Plot and compute metrics
@@ -175,18 +175,13 @@ def evaluate_model(
 
 def main():
     model, _ = get_model(model_name="deit", num_classes=2, pretrained=True)
-    _, val_data_loader, _, _, _ = get_data_loaders(
-        train_val_ratio=0.8,
-        max_rotation_angle=20,
-        batch_size=32,
-        use_weighted_sampler=False,
-    )
+    test_data_loader = get_test_data_loader()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     evaluate_model(
         model_state_dict_path="long-run-experiment.pth",
         model=model,
-        val_data_loader=val_data_loader,
+        data_loader=test_data_loader,
         device=device,
         wandb_track_enabled=False,
         run_name="evaluate-long-run-experiment",

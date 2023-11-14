@@ -1,5 +1,5 @@
 import torch
-from glaucomaclassifier.dataloader import get_data_loaders
+from glaucomaclassifier.dataloader import get_train_val_data_loaders
 from glaucomaclassifier.models import get_model
 from glaucomaclassifier.optimizer import get_optimizer
 from glaucomaclassifier.train import train_model
@@ -17,7 +17,7 @@ def run_training(config: TrainingRunConfig):
         train_dataset_size,
         val_dataset_size,
         class_weigths,
-    ) = get_data_loaders(
+    ) = get_train_val_data_loaders(
         train_val_ratio=config.train_val_ratio,
         max_rotation_angle=config.max_rotation_angle,
         batch_size=config.batch_size,

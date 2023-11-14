@@ -5,6 +5,8 @@ from glaucomaclassifier.constants import (
     INPUT_SIZE,
     SAMPLED_IMAGE_DIR,
     SAMPLED_LABEL_CSV,
+    SAMPLED_TEST_LABEL_CSV,
+    SAMPLED_TEST_IMAGE_DIR
 )
 from glaucomaclassifier.dataset import CustomImageDataset
 from glaucomaclassifier.transforms import get_image_transform, get_label_transform
@@ -14,7 +16,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_data_loaders(
+def get_train_val_data_loaders(
     train_val_ratio=0.8,
     max_rotation_angle=20,
     batch_size=32,
@@ -79,3 +81,27 @@ def get_data_loaders(
         val_dataset_size,
         class_weigths,
     )
+
+def get_test_data_loader(
+    max_rotation_angle: int = 20,
+    batch_size: int = 32,
+):
+    label_dataframe = pd.read_csv(
+        filepath_or_buffer=os.path.join(THIS_DIR, SAMPLED_TEST_LABEL_CSV)
+    )
+    image_directory = os.path.join(THIS_DIR, SAMPLED_TEST_IMAGE_DIR)
+
+    test_image_transform = get_image_transform(
+        is_train=False, input_size=INPUT_SIZE, max_rotation_angle=max_rotation_angle
+    )
+    label_transform = get_label_transform()
+
+    test_dataset = CustomImageDataset(
+        label_dataframe=label_dataframe,
+        image_directory=image_directory,
+        image_transform=test_image_transform,
+        label_transform=label_transform,
+    )
+    test_data_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    return test_data_loader

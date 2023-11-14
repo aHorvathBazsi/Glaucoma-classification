@@ -3,7 +3,7 @@ import os
 import torch
 import wandb
 import yaml
-from glaucomaclassifier.dataloader import get_data_loaders
+from glaucomaclassifier.dataloader import get_test_data_loader
 from glaucomaclassifier.evaluate import evaluate_model
 from glaucomaclassifier.train_runner import run_training
 from glaucomaclassifier.training_run_config import TrainingRunConfig
@@ -31,12 +31,8 @@ def wandb_run_experiment():
 
     # Run the training
     model = run_training(training_run_config)
-    _, val_data_loader, _, _, _ = get_data_loaders(
-        train_val_ratio=training_run_config.train_val_ratio,
-        max_rotation_angle=training_run_config.max_rotation_angle,
-        batch_size=training_run_config.batch_size,
-        use_weighted_sampler=training_run_config.use_weighted_sampler,
-    )
+
+    test_data_loader = get_test_data_loader()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model_state_dict_path = os.path.join(
@@ -45,7 +41,7 @@ def wandb_run_experiment():
     evaluate_model(
         model_state_dict_path=model_state_dict_path,
         model=model,
-        val_data_loader=val_data_loader,
+        data_loader=test_data_loader,
         device=device,
         run_name=wandb.run.name,
         wandb_track_enabled=True,
