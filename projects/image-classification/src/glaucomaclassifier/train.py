@@ -4,9 +4,10 @@ import time
 import numpy as np
 import torch
 import wandb
+from glaucomaclassifier.training_run_config import TrainingRunConfig
 from tqdm import tqdm
 
-from glaucomaclassifier.training_run_config import TrainingRunConfig
+import logging
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,8 +34,8 @@ def train_model(
     best_loss = np.inf
 
     for epoch in range(num_epochs):
-        print(f"Epoch {epoch}/{num_epochs - 1}")
-        print("-" * 10)
+        logging.info(f"Epoch {epoch}/{num_epochs - 1}")
+        logging.info("-" * 10)
 
         for phase in ["train", "val"]:
             if phase == "train":
@@ -78,7 +79,7 @@ def train_model(
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
-            print("{} Loss: {:.4f} Acc: {:.4f}".format(phase, epoch_loss, epoch_acc))
+            logging.info("{} Loss: {:.4f} Acc: {:.4f}".format(phase, epoch_loss, epoch_acc))
             if wandb_track_enabled:
                 wandb.log({f"{phase}_loss": epoch_loss, f"{phase}_acc": epoch_acc})
 
@@ -97,10 +98,10 @@ def train_model(
         wandb.log_artifact(artifact)
 
     time_elapsed = time.time() - since
-    print(
+    logging.info(
         "Training complete in {:.0f}m {:.0f}s".format(
             time_elapsed // 60, time_elapsed % 60
         )
     )
-    print("Best Val Loss: {:.4f}".format(best_loss))
+    logging.info("Best Val Loss: {:.4f}".format(best_loss))
     return model

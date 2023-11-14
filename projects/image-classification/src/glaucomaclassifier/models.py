@@ -1,7 +1,6 @@
 from enum import Enum
 
 import timm
-
 from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
 
 
@@ -52,6 +51,7 @@ def get_model(
 
     return model, trainable_parameters
 
+
 if __name__ == "__main__":
     model = get_model(
         model_name="swin_transformer",
@@ -60,4 +60,3 @@ if __name__ == "__main__":
         unfreeze_head=True,
         unfreeze_blocks_number=0,
     )
-    print("HEY")

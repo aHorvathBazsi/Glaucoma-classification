@@ -1,9 +1,6 @@
 import os
 
 import pandas as pd
-from imagedatahandler.data_sampling import split_label_dataframe
-from torch.utils.data import DataLoader, WeightedRandomSampler
-
 from glaucomaclassifier.constants import (
     INPUT_SIZE,
     SAMPLED_IMAGE_DIR,
@@ -11,6 +8,8 @@ from glaucomaclassifier.constants import (
 )
 from glaucomaclassifier.dataset import CustomImageDataset
 from glaucomaclassifier.transforms import get_image_transform, get_label_transform
+from imagedatahandler.data_sampling import split_label_dataframe
+from torch.utils.data import DataLoader, WeightedRandomSampler
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 

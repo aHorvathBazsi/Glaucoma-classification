@@ -2,7 +2,6 @@ import glob
 import os
 
 import pandas as pd
-
 from glaucomaclassifier.constants import (
     CLASS_NAME_ID_MAP,
     IMAGE_COLUMN_IDX,

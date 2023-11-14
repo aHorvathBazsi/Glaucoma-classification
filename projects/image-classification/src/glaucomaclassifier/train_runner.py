@@ -1,12 +1,11 @@
 import torch
-import os
-from torch import nn, optim
-
 from glaucomaclassifier.dataloader import get_data_loaders
 from glaucomaclassifier.models import get_model
 from glaucomaclassifier.optimizer import get_optimizer
 from glaucomaclassifier.train import train_model
 from glaucomaclassifier.training_run_config import TrainingRunConfig
+from torch import nn, optim
+
 
 def run_training(config: TrainingRunConfig):
 

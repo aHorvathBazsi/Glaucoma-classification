@@ -2,9 +2,6 @@ import os
 
 import cv2
 import pandas as pd
-from imagedatahandler.data_sampling import sample_data_custom_ratio_per_class
-from imagedatahandler.image_operations import remove_padding, save_image
-
 from glaucomaclassifier.constants import (
     ALL_IMAGE_DIR,
     ALL_LABEL_CSV,
@@ -14,8 +11,11 @@ from glaucomaclassifier.constants import (
     SAMPLED_IMAGE_DIR,
     SAMPLED_LABEL_CSV,
 )
+from imagedatahandler.data_sampling import sample_data_custom_ratio_per_class
+from imagedatahandler.image_operations import remove_padding, save_image
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def prepare_image_data():
     label_df = pd.read_csv(ALL_LABEL_CSV)

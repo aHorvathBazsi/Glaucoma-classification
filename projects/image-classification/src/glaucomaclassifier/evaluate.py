@@ -1,8 +1,9 @@
 import matplotlib
 import matplotlib.pyplot as plt
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 import os
+import logging
 
 import numpy as np
 import seaborn as sns
@@ -12,9 +13,15 @@ import wandb
 from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
 from glaucomaclassifier.dataloader import get_data_loaders
 from glaucomaclassifier.models import get_model
-from sklearn.metrics import (auc, confusion_matrix, f1_score,
-                             precision_recall_curve, precision_score,
-                             recall_score, roc_curve)
+from sklearn.metrics import (
+    auc,
+    confusion_matrix,
+    f1_score,
+    precision_recall_curve,
+    precision_score,
+    recall_score,
+    roc_curve,
+)
 from tqdm import tqdm
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -86,7 +93,7 @@ def compute_additional_metrics(original_labels, predicted_labels):
 def get_roc_curve(original_labels, glaucoma_probs, roc_curve_save_path):
     fpr, tpr, thresholds = roc_curve(original_labels, glaucoma_probs)
     roc_auc = auc(fpr, tpr)
-    print(f"ROC AUC: {roc_auc:.2f}")
+    logging.info(f"ROC AUC: {roc_auc:.2f}")
 
     plt.figure(figsize=(8, 6))
     plt.plot(
@@ -109,13 +116,15 @@ def sensitivity_at_certain_specificity(target_specificity, fpr, tpr):
         np.abs(tpr + (1 - fpr) - (1 + target_specificity))
     )
     sensitivity_at_specificity = tpr[closest_specificity_index]
-    print(
+    logging.info(
         f"Sensitivity at {target_specificity*100:.0f}% Specificity: {sensitivity_at_specificity:.2f}"
     )
     return sensitivity_at_specificity
 
 
-def evaluate_model(model_state_dict_path, model, val_data_loader, device, wandb_track_enabled, run_name):
+def evaluate_model(
+    model_state_dict_path, model, val_data_loader, device, wandb_track_enabled, run_name
+):
     # Load the model
     model.load_state_dict(torch.load(model_state_dict_path))
     model.to(device)
@@ -132,15 +141,19 @@ def evaluate_model(model_state_dict_path, model, val_data_loader, device, wandb_
         original_labels,
         predicted_labels,
         list(CLASS_NAME_ID_MAP.keys()),
-        save_path=confusion_matrix_save_path
+        save_path=confusion_matrix_save_path,
     )
     pr_curve_save_path = os.path.join(THIS_DIR, "precision_recall_curve.png")
     plot_precision_recall_curve(original_labels, glaucoma_probs, pr_curve_save_path)
 
-    precision, recall, f1 = compute_additional_metrics(original_labels, predicted_labels)
+    precision, recall, f1 = compute_additional_metrics(
+        original_labels, predicted_labels
+    )
 
     roc_curve_save_path = os.path.join(THIS_DIR, "roc_curve.png")
-    fpr, tpr, thresholds = get_roc_curve(original_labels, glaucoma_probs, roc_curve_save_path)
+    fpr, tpr, thresholds = get_roc_curve(
+        original_labels, glaucoma_probs, roc_curve_save_path
+    )
 
     sensitivity_at_high_specificity = sensitivity_at_certain_specificity(
         0.95, fpr, tpr
@@ -155,9 +168,10 @@ def evaluate_model(model_state_dict_path, model, val_data_loader, device, wandb_
                 "precision": precision,
                 "recall": recall,
                 "f1_score": f1,
-                "sensitivity_at_95_specificity": sensitivity_at_high_specificity
+                "sensitivity_at_95_specificity": sensitivity_at_high_specificity,
             }
         )
+
 
 def main():
     model, _ = get_model(model_name="deit", num_classes=2, pretrained=True)
@@ -170,12 +184,14 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     evaluate_model(
-        model_state_dict_path="tiny-deit-unfrozen-block-1.pth",
+        model_state_dict_path="long-run-experiment.pth",
         model=model,
         val_data_loader=val_data_loader,
         device=device,
-        wandb_track_enabled=True,
-        run_name="deit-test-no-tuning")
+        wandb_track_enabled=False,
+        run_name="evaluate-long-run-experiment",
+    )
+
 
 if __name__ == "__main__":
     main()

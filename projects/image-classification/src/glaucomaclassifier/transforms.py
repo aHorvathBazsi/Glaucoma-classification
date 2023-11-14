@@ -1,8 +1,7 @@
 from typing import Tuple
 
-from torchvision import transforms
-
 from glaucomaclassifier.constants import CLASS_NAME_ID_MAP
+from torchvision import transforms
 
 
 def get_label_transform():
@@ -27,4 +26,3 @@ def get_image_transform(
 
 if __name__ == "__main__":
     image_transform = get_image_transform(is_train=True)
-    print("HEY")
