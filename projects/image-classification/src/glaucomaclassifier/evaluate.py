@@ -110,16 +110,20 @@ def get_roc_curve(original_labels, glaucoma_probs, roc_curve_save_path):
     plt.close()
     return fpr, tpr, thresholds
 
+def sensitivity_at_certain_specificity(target_specificity, false_positive_rates, true_positive_rates):
+    # Calculate specificities from FPRs
+    specificities = 1 - false_positive_rates
 
-def sensitivity_at_certain_specificity(target_specificity, fpr, tpr):
-    closest_specificity_index = np.argmin(
-        np.abs(tpr + (1 - fpr) - (1 + target_specificity))
-    )
-    sensitivity_at_specificity = tpr[closest_specificity_index]
-    logging.info(
-        f"Sensitivity at {target_specificity*100:.0f}% Specificity: {sensitivity_at_specificity:.2f}"
-    )
-    return sensitivity_at_specificity
+    # Find the index where specificity is closest to the target specificity
+    closest_index = np.abs(specificities - target_specificity).argmin()
+
+    # Get the sensitivity (TPR) at this index
+    sensitivity_at_target_spec = true_positive_rates[closest_index]
+
+    # Logging the result for clarity
+    print(f"Sensitivity at {target_specificity*100:.0f}% Specificity: {sensitivity_at_target_spec:.2f}")
+
+    return sensitivity_at_target_spec
 
 
 def evaluate_model(
@@ -179,7 +183,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     evaluate_model(
-        model_state_dict_path="long-run-experiment.pth",
+        model_state_dict_path="best-model.pth",
         model=model,
         data_loader=test_data_loader,
         device=device,
