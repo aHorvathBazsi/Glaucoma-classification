@@ -17,7 +17,6 @@ from glaucomaclassifier.constants import (
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
 def prepare_image_data():
     label_df = pd.read_csv(ALL_LABEL_CSV)
     image_dir = os.path.join(THIS_DIR, ALL_IMAGE_DIR)
