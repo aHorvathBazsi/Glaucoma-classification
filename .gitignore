@@ -136,4 +136,4 @@ dmypy.json
 # wandb related
 *.json
 *.wandb
-*config.yaml
+*.yaml
