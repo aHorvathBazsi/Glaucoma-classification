@@ -48,4 +48,8 @@ To train and evaluate models:
 1. Set up your experiment parameters in `run_experiment.py`.
 2. Execute `python run_experiment.py` to start the training and evaluation process.
 
-For more detailed usage and additional configurations, refer @aHorvathBazsi
+## Contact
+
+For any queries or contributions, feel free to reach out to me.
+
+- Balázs Horváth ([@aHorvathBazsi](https://github.com/aHorvathBazsi))
