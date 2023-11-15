@@ -37,11 +37,11 @@ def main():
         config = run.config
     else:
         config = {
-            "gamma": 0.908359578075428,
+            "gamma": 0.807476065399156,
             "batch_size": 32,
             "model_name": "deit",
             "optimizer_type": "AdamW",
-            "base_learning_rate": 0.0027649750085315993,
+            "base_learning_rate": 0.0010997898678008486,
             "unfreeze_blocks_number": 2,
         }
     config["run_name"] = args.run_name
